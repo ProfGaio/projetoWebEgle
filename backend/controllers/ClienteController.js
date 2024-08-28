@@ -59,4 +59,32 @@ module.exports = class ClienteController{
             res.status(500).json({mensagem: erro})
         }
     } /* Fim do método registrar */
+
+    /* Início do método de login */
+    static async login(req, res){
+        const {email, senha} = req.body
+        /* VALIDANDO entrada de e-mail e senha */
+        if(!email){
+            res.status(422).json({mensagem: "O e-mail é obrigatório"})
+            return
+        }
+        if(!senha){
+            res.status(422).json({mensagem: "A senha é obrigatória"})
+            return
+        }
+        /* VERIFICA se o e-mail está cadastrado */
+        const cliente = await Cliente.findOne({email: email})
+        
+        if(!cliente){
+            res.status(422).json({mensagem:"Usuário não cadastrado"})
+            return
+        }
+        /* VERIFICA se senha informada está cadastrada */
+        const verificaSenha = await bcrypt.compare(senha, cliente.senha)
+        if(!verificaSenha){
+            res.status(422).json({mensagem:"Senha não confere!"})
+            return
+        } 
+        await criarClienteToken(cliente,req,res)
+    } /* FIM do método de login */
 }
